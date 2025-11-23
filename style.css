@@ -1,14 +1,192 @@
 html, body {
   margin: 0;
   padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Cormorant', serif; 
+  color: rgb(242,240,229); 
 }
 
+/* -------------------------------------------------- */
+/* SFONDO E FILTRI */
+/* -------------------------------------------------- */
 
+#foto_sfondo_inizio {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* Colore di fallback per lo sfondo (verde scuro) */
+  background-color: rgb(0, 50, 20); 
+  
+  /* Immagine (se caricata, si sovrappone al colore) */
+  background-image: url('foto_sfondo_inizio.jpg'); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1; /* Livello 1: Sotto Canvas (2) e Testo (3) */
+  opacity: 1; 
+  filter: none;
+  /* Piccolo ingrandimento per nascondere i bordi durante la sfocatura */
+  transform: scale(1.1); 
+  transition: filter 1s ease-in-out, transform 1s ease-in-out;
+}
 
+/* Filtro Sfocato */
+#foto_sfondo_inizio.blurred {
+  filter: blur(8px);
+  transform: scale(1); 
+}
+
+/* Overlay Colore Verde Semitrasparente (rimane visibile) */
+#foto_sfondo_inizio.blurred::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Overlay colore per scurire ulteriormente l'immagine sfocata */
+  background-color: rgba(0, 50, 20, 0.6); 
+  pointer-events: none;
+  z-index: 2; /* L'overlay deve essere sopra l'immagine (z-index: 1) */
+}
+
+/* Assicura che il canvas P5.js sia dietro il testo ma sopra lo sfondo sfocato */
 canvas {
-  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2; 
+}
+
+/* -------------------------------------------------- */
+/* OVERLAY TESTO CENTRALE (Centratura con Flexbox) */
+/* -------------------------------------------------- */
+
+#text-overlay {
+  position: fixed;
+  top: 0; 
+  left: 0; 
+  width: 100vw; 
+  height: 100vh; 
+  
+  /* Centratura perfetta Flexbox */
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  
+  z-index: 3; /* Livello 3: Sopra tutti */
+  text-align: center;
+  opacity: 0; 
+  transition: opacity 1.5s ease-in-out;
+}
+
+#text-overlay.visible {
+  opacity: 1;
+}
+
+#text-overlay h1 {
+  /* Assicuriamo che il contenitore H1 non sia troppo largo per evitare confusione */
+  max-width: 90vw; 
+  
+  /* Stile di base per il testo (Frase 1 e Frase 2 iniziale) */
+  font-size: 3.5rem; 
+  color: rgb(242,240,229);
+  line-height: 1.2; /* Line height normale per un testo unito */
+  margin: 0;
+  font-weight: 400;
+  transition: all 1.5s ease-in-out; 
+}
+
+/* -------------------------------------------------- */
+/* FRECCE DI NAVIGAZIONE */
+/* -------------------------------------------------- */
+
+#arrow-next, #arrow-prev {
+  position: fixed;
+  top: 50%;
+  width: 2rem;
+  height: 2rem;
+  border-top: 3px solid rgb(242,240,229);
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0; 
+  transition: opacity 1s ease-in-out, transform 0.3s ease;
+}
+
+/* Freccia Destra (Next) */
+#arrow-next {
+  right: 2vw;
+  border-right: 3px solid rgb(242,240,229);
+  transform: translateY(-50%) rotate(45deg); 
+}
+
+/* Freccia Sinistra (Prev) */
+#arrow-prev {
+  left: 2vw;
+  border-left: 3px solid rgb(242,240,229);
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+#arrow-next.visible, #arrow-prev.visible {
+  opacity: 1;
+}
+#arrow-next:hover {
+  transform: translateY(-50%) rotate(45deg) scale(1.2);
+}
+#arrow-prev:hover {
+  transform: translateY(-50%) rotate(-45deg) scale(1.2);
+}
+
+/* -------------------------------------------------- */
+/* TRANSIZIONE DEL TESTO (FRASI) */
+/* -------------------------------------------------- */
+
+/* 1. Nasconde il testo descrittivo (la parte superiore della Frase 2) */
+#descriptive-text {
+    display: block; 
+    /* Altezza normale per evitare stacchi */
+    line-height: 1.2; 
+    transition: opacity 1.5s ease-in-out, line-height 1.5s ease-in-out;
+}
+
+#descriptive-text.hidden-text {
+    /* Setta l'altezza a zero per collassare e nascondere il testo */
+    opacity: 0;
+    height: 0;
+    /* Rimuove lo spazio che occupava */
+    margin: 0; 
+}
+
+/* 2. Ingrandimento del solo numero */
+#animated-number {
+    display: inline-block;
+    /* Usa un easing "spring" per l'ingrandimento del numero */
+    transition: font-size 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), font-weight 1.5s ease-in-out;
+    /* Colore leggermente diverso per farlo risaltare */
+    color: rgb(245, 255, 235);
+}
+
+.final-animation {
+    font-size: 6.5rem !important; /* Ancora più grande per l'effetto finale */
+    font-weight: 700 !important;
+}
+
+/* -------------------------------------------------- */
+/* MEDIA QUERIES per Mobile */
+/* -------------------------------------------------- */
+@media (max-width: 768px) {
+    #text-overlay h1 {
+        font-size: 2rem;
+    }
+    .final-animation {
+        font-size: 3.5rem !important;
+    }
+    #arrow-next, #arrow-prev {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
 }
